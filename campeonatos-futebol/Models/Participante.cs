@@ -4,9 +4,9 @@ namespace campeonatos_futebol.Models
 {
     internal class Participante : Model
     {
-        protected static string tabela = "tb_participante";
+        public override string Tabela { get; protected set; } = "tb_participante";
 
-        protected static string[] colunas =
+        public override string[] Colunas { get; protected set; } = new string[]
         {
             "campeonato_id",
             "time_id",
@@ -14,7 +14,7 @@ namespace campeonatos_futebol.Models
             "total_gols"
         };
 
-        public static new void Inserir(Dictionary<string, object> dados)
+        public override void Inserir(Dictionary<string, object> dados)
         {
             using (SqlConnection conexao = new SqlConnection(endereco))
             {
@@ -24,7 +24,7 @@ namespace campeonatos_futebol.Models
                 {
                     comando.CommandType = System.Data.CommandType.StoredProcedure;
 
-                    foreach (string coluna in colunas)
+                    foreach (string coluna in Colunas)
                         if (dados.ContainsKey(coluna))
                             comando.Parameters.AddWithValue($"@{coluna}", dados[coluna] ?? null);
 
@@ -32,7 +32,7 @@ namespace campeonatos_futebol.Models
                 }
             }
         }
-        public static bool Existe(Dictionary<string, object> dados)
+        public bool Existe(Dictionary<string, object> dados)
         {
             using (SqlConnection conexao = new SqlConnection(endereco))
             {
@@ -42,7 +42,7 @@ namespace campeonatos_futebol.Models
                 {
                     comando.CommandType = System.Data.CommandType.StoredProcedure;
 
-                    foreach (string coluna in colunas)
+                    foreach (string coluna in Colunas)
                         if (dados.ContainsKey(coluna))
                             comando.Parameters.AddWithValue($"@{coluna}", dados[coluna] ?? null);
 

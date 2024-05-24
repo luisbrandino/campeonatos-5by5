@@ -13,14 +13,16 @@ menu.LimparAposImpressao(true);
 
 void criarTime()
 {
-    if (Time.Existe("Titanos"))
+    Time time = new();
+
+    if (time.Existe(new Dictionary<string, object> { { "nome", "Titanos"} }))
     {
         Console.WriteLine("Time já existe");
         Console.ReadKey();
         return;
     }
 
-    Time.Inserir(new Dictionary<string, object>
+    time.Inserir(new Dictionary<string, object>
     {
         { "nome", "Titanos" },
         { "apelido", "Titans" },
@@ -30,16 +32,17 @@ void criarTime()
 
 void criarCampeonato()
 {
+    Campeonato campeonato = new();
     string nome = "Liga Americana";
 
-    if (Campeonato.Existe(nome))
+    if (campeonato.Existe(nome))
     {
         Console.WriteLine("Campeonato já existe");
         Console.ReadKey();
         return;
     }
 
-    Campeonato.Inserir(new Dictionary<string, object>()
+    campeonato.Inserir(new Dictionary<string, object>()
     {
         { "nome", nome }
     });

@@ -4,33 +4,19 @@ namespace campeonatos_futebol.Models
 {
     internal class Campeonato : Model
     {
-        protected static string tabela = "tb_time";
+        public override string Tabela { get; protected set; } = "tb_campeonato";
 
-        protected static string[] colunas =
+        public override string[] Colunas { get; protected set; } = new string[]
         {
             "nome"
         };
 
-        public static new void Inserir(Dictionary<string, object> dados)
+        public new void Inserir(Dictionary<string, object> dados)
         {
-            using (SqlConnection conexao = new SqlConnection(endereco))
-            {
-                conexao.Open();
-
-                using (SqlCommand comando = new SqlCommand("criar_campeonato", conexao))
-                {
-                    comando.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    foreach (string coluna in colunas)
-                        if (dados.ContainsKey(coluna))
-                            comando.Parameters.AddWithValue($"@{coluna}", dados[coluna] ?? null);
-
-                    comando.ExecuteNonQuery();
-                }
-            }
+           
         }
 
-        public static bool Existe(string nome)
+        public bool Existe(string nome)
         {
             if (nome.Length > 30)
                 return false;
