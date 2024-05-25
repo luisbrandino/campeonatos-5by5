@@ -13,7 +13,7 @@ namespace campeonatos_futebol.Models
 
         public new void Inserir(Dictionary<string, object> dados)
         {
-           
+            ProcedureNonQuery("criar_campeonato", dados);
         }
 
         public bool Existe(string nome)
@@ -21,21 +21,12 @@ namespace campeonatos_futebol.Models
             if (nome.Length > 30)
                 return false;
 
-            using (SqlConnection conexao = new SqlConnection(endereco))
-            {
-                conexao.Open();
+            return Existe(new Dictionary<string, object> { { "nome", nome } });
+        }
 
-                using (SqlCommand comando = new SqlCommand("campeonato_existe", conexao))
-                {
-                    comando.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    comando.Parameters.AddWithValue("@nome", nome);
-
-                    int result = (int) comando.ExecuteScalar();
-
-                    return result > 0;
-                }
-            }
+        public bool Existe(Dictionary<string, object> dados)
+        {
+            return ProcedureScalar<int>("campeonato_existe", dados) > 0;
         }
 
     }

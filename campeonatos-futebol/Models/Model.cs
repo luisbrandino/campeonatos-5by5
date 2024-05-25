@@ -10,34 +10,44 @@ namespace campeonatos_futebol.Models
 
         protected static string endereco = "Server=127.0.0.1;Database=db_futebol;User Id=sa;Password=SqlServer2019!;TrustServerCertificate=True";
 
-        private SqlCommand Procedure(string nome, Dictionary<string, object> dados)
+        protected SqlConnection conexaoAtual;
+
+        private SqlCommand? Procedure(string nome, Dictionary<string, object> dados)
         {
-            using (SqlConnection conexao = new SqlConnection(endereco))
-            {
-                conexao.Open();
+            AbrirConexao();
 
-                SqlCommand comando = new SqlCommand(nome, conexao);
+            SqlCommand comando = new SqlCommand(nome, conexaoAtual);
 
-                comando.CommandType = System.Data.CommandType.StoredProcedure;
+            comando.CommandType = System.Data.CommandType.StoredProcedure;
 
-                foreach (string coluna in Colunas)
-                    if (dados.ContainsKey(coluna))
-                        comando.Parameters.AddWithValue(coluna, dados[coluna]);
+            foreach (string coluna in Colunas)
+                if (dados.ContainsKey(coluna))
+                    comando.Parameters.AddWithValue(coluna, dados[coluna]);
 
-                return comando;
-            }
+            return comando;
         }
 
         protected void ProcedureNonQuery(string nome, Dictionary<string, object> dados)
         {
-            using (SqlCommand procedure = Procedure(nome, dados))
-                procedure.ExecuteNonQuery();
+            using (SqlConnection conexao = conexaoAtual)
+                using (SqlCommand procedure = Procedure(nome, dados))
+                    procedure.ExecuteNonQuery();
         }
 
         protected T ProcedureScalar<T>(string nome, Dictionary<string, object> dados)
         {
-            using (SqlCommand procedure = Procedure(nome, dados))
-                return (T)procedure.ExecuteScalar();   
+            using (SqlConnection conexao = conexaoAtual)
+                using (SqlCommand procedure = Procedure(nome, dados))
+                    return (T)procedure.ExecuteScalar();
+        }
+
+        protected void AbrirConexao()
+        {
+            conexaoAtual?.Dispose();
+
+            conexaoAtual = new SqlConnection(endereco);
+
+            conexaoAtual.Open();
         }
 
         public virtual void Inserir(Dictionary<string, object> dados)

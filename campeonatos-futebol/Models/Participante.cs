@@ -1,6 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-
-namespace campeonatos_futebol.Models
+﻿namespace campeonatos_futebol.Models
 {
     internal class Participante : Model
     {
@@ -16,41 +14,17 @@ namespace campeonatos_futebol.Models
 
         public override void Inserir(Dictionary<string, object> dados)
         {
-            using (SqlConnection conexao = new SqlConnection(endereco))
-            {
-                conexao.Open();
-
-                using (SqlCommand comando = new SqlCommand("criar_participante", conexao))
-                {
-                    comando.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    foreach (string coluna in Colunas)
-                        if (dados.ContainsKey(coluna))
-                            comando.Parameters.AddWithValue($"@{coluna}", dados[coluna] ?? null);
-
-                    comando.ExecuteNonQuery();
-                }
-            }
+            ProcedureNonQuery("criar_participante", dados);   
         }
+
+        public bool Existe(int campeonatoId, int timeId)
+        {
+            return Existe(new Dictionary<string, object> { { "campeonato_id", campeonatoId }, { "time_id", timeId } });
+        }
+        
         public bool Existe(Dictionary<string, object> dados)
         {
-            using (SqlConnection conexao = new SqlConnection(endereco))
-            {
-                conexao.Open();
-
-                using (SqlCommand comando = new SqlCommand("participante_existe", conexao))
-                {
-                    comando.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    foreach (string coluna in Colunas)
-                        if (dados.ContainsKey(coluna))
-                            comando.Parameters.AddWithValue($"@{coluna}", dados[coluna] ?? null);
-
-                    int result = (int)comando.ExecuteScalar();
-
-                    return result > 0;
-                }
-            }
+            return ProcedureScalar<int>("participante_existe", dados) > 0;
         }
     }
 }

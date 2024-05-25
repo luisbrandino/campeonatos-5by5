@@ -15,7 +15,7 @@ void criarTime()
 {
     Time time = new();
 
-    if (time.Existe(new Dictionary<string, object> { { "nome", "Titanos"} }))
+    if (time.Existe("Titanos"))
     {
         Console.WriteLine("Time já existe");
         Console.ReadKey();
