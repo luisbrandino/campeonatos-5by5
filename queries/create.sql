@@ -13,7 +13,7 @@ create table tb_campeonato(
 	nome varchar(40) not null unique,
 
 	constraint pk_campeonato primary key (id),
-	constraint fk_time_campeao foreign key (id) references tb_time(id)
+	constraint fk_time_campeao foreign key (time_campeao_id) references tb_time(id)
 );
 
 create table tb_jogo(
