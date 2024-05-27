@@ -1,4 +1,6 @@
-﻿namespace campeonatos_futebol.Models
+﻿using System.Data;
+
+namespace campeonatos_futebol.Models
 {
     internal class Time : Model
     {
@@ -6,14 +8,20 @@
 
         public override string[] Colunas { get; protected set; } = new string[]
         {
+            "id",
             "nome",
             "apelido",
             "data_criacao"
         };
 
-        public override void Inserir(Dictionary<string, object> dados)
+        public DataRowCollection? Buscar(string nome)
         {
-            ProcedureNonQuery("criar_time", dados);
+            return base.Buscar(new Dictionary<string, object> { { "nome", nome } });
+        }
+
+        public int Inserir(Dictionary<string, object> dados)
+        {
+            return ProcedureScalar<int>("criar_time", dados);
         }
 
         public bool Existe(string nome)

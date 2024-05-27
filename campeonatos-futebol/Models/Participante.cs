@@ -1,4 +1,6 @@
-﻿namespace campeonatos_futebol.Models
+﻿using System.Data;
+
+namespace campeonatos_futebol.Models
 {
     internal class Participante : Model
     {
@@ -12,9 +14,14 @@
             "total_gols"
         };
 
-        public override void Inserir(Dictionary<string, object> dados)
+        public override DataRowCollection? Buscar(int campeonatoId)
         {
-            ProcedureNonQuery("criar_participante", dados);   
+            return base.Buscar(new Dictionary<string, object> { { "campeonato_id", campeonatoId } });
+        }
+
+        public int Inserir(Dictionary<string, object> dados)
+        {
+            return ProcedureScalar<int>("criar_participante", dados);   
         }
 
         public bool Existe(int campeonatoId, int timeId)

@@ -1,3 +1,4 @@
+use db_futebol;
 create table tb_time(
 	id int identity(1, 1),
 	nome varchar(30) not null unique,

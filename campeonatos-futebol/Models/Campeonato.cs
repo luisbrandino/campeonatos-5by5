@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data;
 
 namespace campeonatos_futebol.Models
 {
@@ -8,12 +8,34 @@ namespace campeonatos_futebol.Models
 
         public override string[] Colunas { get; protected set; } = new string[]
         {
-            "nome"
+            "id",
+            "nome",
+            "time_campeao_id"
         };
 
-        public new void Inserir(Dictionary<string, object> dados)
+        public DataRow BuscarTimeComMaisGols(int campeonatoId)
         {
-            ProcedureNonQuery("criar_campeonato", dados);
+            return ProcedureDataTable("buscar_time_com_mais_gols", new Dictionary<string, object> { {"campeonato_id", campeonatoId } })[0];
+        }
+
+        public DataRow BuscarTimeQueTomouMaisGols(int campeonatoId)
+        {
+            return ProcedureDataTable("buscar_time_que_tomou_mais_gols", new Dictionary<string, object> { { "campeonato_id", campeonatoId } })[0];
+        }
+
+        public DataRow BuscarJogoComMaisGols(int campeonatoId)
+        {
+            return ProcedureDataTable("buscar_jogo_com_mais_gols", new Dictionary<string, object> { { "campeonato_id", campeonatoId } })[0];
+        }
+
+        public DataRowCollection BuscarMaiorNumeroDeGolsDeCadaTime(int campeonatoId)
+        {
+            return ProcedureDataTable("buscar_maior_numero_de_gols_de_cada_time", new Dictionary<string, object> { { "campeonato_id", campeonatoId } });
+        }
+
+        public int Inserir(Dictionary<string, object> dados)
+        {
+            return ProcedureScalar<int>("criar_campeonato", dados);
         }
 
         public bool Existe(string nome)

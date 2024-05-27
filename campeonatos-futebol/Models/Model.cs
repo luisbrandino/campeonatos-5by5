@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace campeonatos_futebol.Models
 {
@@ -12,17 +13,62 @@ namespace campeonatos_futebol.Models
 
         protected SqlConnection conexaoAtual;
 
-        private SqlCommand? Procedure(string nome, Dictionary<string, object> dados)
+        private SqlCommand? Command(string query, Dictionary<string, object>? dados = null)
         {
             AbrirConexao();
 
-            SqlCommand comando = new SqlCommand(nome, conexaoAtual);
+            SqlCommand comando = new SqlCommand(query, conexaoAtual);
 
-            comando.CommandType = System.Data.CommandType.StoredProcedure;
+            if (dados != null)
+                foreach (var dado in dados)
+                        comando.Parameters.AddWithValue(dado.Key, dado.Value);
 
-            foreach (string coluna in Colunas)
-                if (dados.ContainsKey(coluna))
-                    comando.Parameters.AddWithValue(coluna, dados[coluna]);
+            return comando;
+        }
+
+        protected DataRowCollection? CommandDataTable(SqlCommand comando)
+        {
+            using (SqlConnection conexao = conexaoAtual)
+                using (SqlDataAdapter adaptador = new SqlDataAdapter(comando))
+                {
+                    DataTable resultado = new();
+
+                    adaptador.Fill(resultado);
+
+                    if (resultado.Rows.Count <= 0)
+                        return null;
+
+                    return resultado.Rows;
+                }
+        }
+
+        protected void CommandNonQuery(SqlCommand comando)
+        {
+            using (SqlConnection conexao = conexaoAtual)
+                comando.ExecuteNonQuery();
+        }
+
+        protected T? CommandScalar<T>(SqlCommand comando)
+        {
+            using (SqlConnection conexao = conexaoAtual)
+            {
+                object resultado = comando.ExecuteScalar();
+
+                if (resultado == null)
+                    return default(T);
+
+                return (T)resultado;
+            }
+        }
+
+        private SqlCommand? Procedure(string nome, Dictionary<string, object> dados)
+        {
+            SqlCommand? comando = Command(nome, dados);
+
+            if (comando == null)
+                return null;
+
+            comando.CommandType = CommandType.StoredProcedure;
 
             return comando;
         }
@@ -30,15 +76,22 @@ namespace campeonatos_futebol.Models
         protected void ProcedureNonQuery(string nome, Dictionary<string, object> dados)
         {
             using (SqlConnection conexao = conexaoAtual)
-                using (SqlCommand procedure = Procedure(nome, dados))
-                    procedure.ExecuteNonQuery();
+            using (SqlCommand? procedure = Procedure(nome, dados))
+                CommandNonQuery(procedure);
         }
 
-        protected T ProcedureScalar<T>(string nome, Dictionary<string, object> dados)
+        protected T? ProcedureScalar<T>(string nome, Dictionary<string, object> dados)
         {
             using (SqlConnection conexao = conexaoAtual)
-                using (SqlCommand procedure = Procedure(nome, dados))
-                    return (T)procedure.ExecuteScalar();
+            using (SqlCommand? procedure = Procedure(nome, dados))
+                return CommandScalar<T>(procedure);
+        }
+
+        protected DataRowCollection? ProcedureDataTable(string nome, Dictionary<string, object> dados)
+        {
+            using (SqlConnection conexao = conexaoAtual)
+            using (SqlCommand? procedure = Procedure(nome, dados))
+                return CommandDataTable(procedure);
         }
 
         protected void AbrirConexao()
@@ -50,28 +103,39 @@ namespace campeonatos_futebol.Models
             conexaoAtual.Open();
         }
 
-        public virtual void Inserir(Dictionary<string, object> dados)
+        public virtual DataRowCollection? Buscar(int id)
         {
+            if (!Colunas.Contains("id"))
+                return null;
+
+            return Buscar(new Dictionary<string, object> { { "id", id } });
         }
 
-        public virtual void Buscar()
+        public virtual DataRowCollection? Buscar(Dictionary<string, object> dados)
         {
+            string query = $"select {string.Join(',', Colunas.ToArray())} from {Tabela} ";
 
+            string where = string.Join(" and ", dados.Keys);
+
+            foreach (string key in dados.Keys)
+                if (Colunas.Contains(key))
+                    where = where.Replace(key, $"{key} = @{key}");
+
+            query += "where " + where;
+
+            return CommandDataTable(Command(query, dados));
         }
 
-        public virtual void BuscarTodos()
+        public virtual DataRowCollection? BuscarTodos()
         {
+            string query = $"select {string.Join(',', Colunas.ToArray())} from {Tabela}";
 
+            return CommandDataTable(Command(query));
         }
 
-        public virtual void Salvar()
+        public virtual int Contagem()
         {
-
-        }
-
-        public virtual void Deletar()
-        {
-
+            return CommandScalar<int>(Command($"select count(1) from {Tabela}"));
         }
     }
 }

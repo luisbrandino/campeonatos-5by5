@@ -12,9 +12,19 @@ namespace campeonatos_futebol.Models
             "time_visitante_id",
         };
 
-        public override void Inserir(Dictionary<string, object> dados)
+        public int Inserir(Dictionary<string, object> dados)
         {
-            ProcedureNonQuery("criar_jogo", dados);
+            return ProcedureScalar<int>("criar_jogo", dados);
+        }
+
+        public void DefinirGolsTimeMandante(Dictionary<string, object> dados)
+        {
+            ProcedureNonQuery("definir_gols_time_mandante", dados);
+        }
+
+        public void DefinirGolsTimeVisitante(Dictionary<string, object> dados)
+        {
+            ProcedureNonQuery("definir_gols_time_visitante", dados);
         }
 
         public bool Existe(int campeonatoId, int timeMandanteId, int timeVisitanteId)
